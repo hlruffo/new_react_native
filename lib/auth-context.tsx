@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { Models } from "react-native-appwrite";
+import { ID, Models } from "react-native-appwrite";
 import { account } from "./appwrite";
 
 // rastrear o estado de autenticação do usuário e fornecer métodos para login, registro e logout.
@@ -7,7 +7,7 @@ type AuthContextType = {
     //user: Models.User<Models.Preferences> | null;
     signIn: (email: string, password: string) => Promise<string | null>;
     signUp: (email: string, password: string) => Promise<string | null>;
-    signOut: () => Promise<void>;
+    //signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,7 +17,7 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     const signUp = async (email: string, password: string) => {
         try{
             await account.create(ID.unique(), email, password)
-            await signIn()
+            await signIn(email, password)
             return null
         }catch (error){
             if (error instanceof Error){
@@ -37,11 +37,11 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
             return "Ocorreu um erro durante o login."
         }
     };
-    const signOut = () => {};
+    //const signOut = () => {};
 
 
     return(
-    <AuthContext.Provider value={{signIn, signUp, signOut}}>
+    <AuthContext.Provider value={{signIn, signUp}}>
             {children}
     </AuthContext.Provider>
     );

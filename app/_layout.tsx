@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 function RouteGuard({children}: {children: React.ReactNode}) {
   const router = useRouter();
-  const isAuth=false; 
+  const isAuth= false; 
 
   useEffect(()=>{
     if(!isAuth){

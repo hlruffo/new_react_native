@@ -1,18 +1,38 @@
-import { createContext, useContext } from "react";
+import { createContext, use, useContext, useEffect, useState } from "react";
 import { ID, Models } from "react-native-appwrite";
 import { account } from "./appwrite";
 
 // rastrear o estado de autenticação do usuário e fornecer métodos para login, registro e logout.
 type AuthContextType = {
-    //user: Models.User<Models.Preferences> | null;
+    user: Models.User<Models.Preferences> | null;
+    isLoadingUser: boolean;
     signIn: (email: string, password: string) => Promise<string | null>;
     signUp: (email: string, password: string) => Promise<string | null>;
-    //signOut: () => Promise<void>;
+    signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({children}: {children: React.ReactNode}) {
+    const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
+    const [isLoadingUser, setIsLoadingUser] = useState<boolean>(true);
+
+    //verifica se o usuario está logado sempre que renderizar
+    //AuthProvider no return
+    useEffect(() => {
+        getUser();
+    }, []);
+
+    const getUser = async () => {
+        try{
+            const session = await account.get();
+            setUser(session)
+        }catch(error){
+            setUser(null)
+        }finally{
+            setIsLoadingUser(false)
+        }
+    };
 
     const signUp = async (email: string, password: string) => {
         try{
@@ -29,6 +49,8 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     const signIn = async (email: string, password: string) => {
         try{
             await account.createEmailPasswordSession(email, password)
+            const session = await account.get()
+            setUser(session)
             return null
         }catch (error){
             if (error instanceof Error){
@@ -37,11 +59,18 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
             return "Ocorreu um erro durante o login."
         }
     };
-    //const signOut = () => {};
+    const signOut = async() => {
+        try{
+            await account.deleteSession("current");
+            setUser(null);
+        }catch(error){
+            console.log(error);
+        }
+    };
 
 
     return(
-    <AuthContext.Provider value={{signIn, signUp}}>
+    <AuthContext.Provider value={{user, isLoadingUser, signIn, signUp, signOut}}>
             {children}
     </AuthContext.Provider>
     );

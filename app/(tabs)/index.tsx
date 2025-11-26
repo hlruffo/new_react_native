@@ -3,9 +3,10 @@ import { useAuth } from "@/lib/auth-context";
 import { Habit } from "@/types/database.type";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text , ScrollView} from "react-native";
 import { Query } from "react-native-appwrite";
 import { Button, Surface } from "react-native-paper";
+
 
 
 export default function Index() {
@@ -56,6 +57,7 @@ export default function Index() {
         <Button mode="text" onPress={signOut} icon={"logout"}>Sair</Button>
       </View>
 
+      <ScrollView showsVerticalScrollIndicator={false}>
       {habit?.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateText}>Você ainda não tem uma rotina cadastrada. Adicione sua primeira!</Text>
@@ -76,8 +78,10 @@ export default function Index() {
               </View>
             </View>
           </Surface>
+          
         ))
       )}
+      </ScrollView>
     </View>
   );
 }
@@ -96,6 +100,7 @@ const styles = StyleSheet.create({
   title:{
     fontWeight:"bold",
     color: "#000",
+    fontSize:32
   },
   card:{
     marginBottom:18,
@@ -158,6 +163,7 @@ const styles = StyleSheet.create({
   },
   text:{
     color: "#000",
+    fontSize:32
   },
   emptyState:{
     flex:1,

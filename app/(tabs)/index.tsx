@@ -2,17 +2,19 @@ import { client, DATABASE_ID, databases, HABITS_TABLE_ID, RealTimeResponse } fro
 import { useAuth } from "@/lib/auth-context";
 import { Habit } from "@/types/database.type";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, Text , ScrollView} from "react-native";
 import { Query } from "react-native-appwrite";
+import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface } from "react-native-paper";
 
 
 
 export default function Index() {
   const{signOut, user} = useAuth();
-
   const [habit, setHabit] = useState<Habit[]>()
+
+  const swipeableRefs = useRef<{[key: string]: Swipeable | null }>({})
 
   useEffect(()=>{
     if (user){
@@ -50,6 +52,27 @@ export default function Index() {
     }
   }
 
+  const renderLeftActions = () => (
+    <View style={styles.swipeLeftAction}>
+      <MaterialCommunityIcons 
+        name="trash-can-outline"
+        size={32} 
+        color={"#fff"}
+      />
+    </View>
+  );
+  
+  const renderRightActions = () => (
+    <View style={styles.swipeRightAction}>
+      <MaterialCommunityIcons 
+        name="check-circle-outline"  
+        size={32} 
+        color={"#fff"}
+      />
+    </View>
+  );
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -64,21 +87,29 @@ export default function Index() {
         </View>
       ) : (
         habit?.map((habit, index) => (
-          <Surface key={index} style={styles.card} elevation={1}>
-            <View style={styles.cardContent}>
-              <Text style= {styles.cardTitle}>{habit.title}</Text>
-              <Text style= {styles.cardDescription}>{habit.description}</Text>
-              <View style= {styles.cardFooter}>
-                <View style= {styles.streakBadge}><MaterialCommunityIcons name="fire" size={18} color={"#ff9800"}/>
-                  <Text style= {styles.streaktext}>{habit.streak_count} dias seguidos</Text>
-                </View>
-                <View style= {styles.frequencyBadge}>
-                  <Text style= {styles.frequencyText}>{habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} </Text>
+          <Swipeable ref={(ref) =>{
+            swipeableRefs.current[habit.$id] = ref
+          }} key={index}
+          overshootLeft={false}
+          overshootRight={false}
+          renderLeftActions={renderLeftActions}
+          renderRightActions={renderRightActions}
+          >
+            <Surface  style={styles.card} elevation={1}>
+              <View style={styles.cardContent}>
+                <Text style= {styles.cardTitle}>{habit.title}</Text>
+                <Text style= {styles.cardDescription}>{habit.description}</Text>
+                <View style= {styles.cardFooter}>
+                  <View style= {styles.streakBadge}><MaterialCommunityIcons name="fire" size={18} color={"#ff9800"}/>
+                    <Text style= {styles.streaktext}>{habit.streak_count} dias seguidos</Text>
+                  </View>
+                  <View style= {styles.frequencyBadge}>
+                    <Text style= {styles.frequencyText}>{habit.frequency.charAt(0).toUpperCase() + habit.frequency.slice(1)} </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          </Surface>
-          
+            </Surface> 
+          </Swipeable>         
         ))
       )}
       </ScrollView>
@@ -172,5 +203,25 @@ const styles = StyleSheet.create({
   },
   emptyStateText:{
     color: "#666666",
+  },
+  swipeLeftAction:{
+    justifyContent:"center",
+    alignItems:"flex-start",
+    flex:1,
+    backgroundColor:"#e53935",
+    borderRadius:18,
+    marginBottom:18,
+    marginTop:2,
+    paddingLeft:16,
+  },
+  swipeRightAction:{
+    justifyContent:"center",
+    alignItems:"flex-end",
+    flex:1,
+    backgroundColor:"#4caf50",
+    borderRadius:18,
+    marginBottom:18,
+    marginTop:2,
+    paddingRight:16,
   },
 })

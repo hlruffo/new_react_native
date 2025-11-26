@@ -8,7 +8,7 @@ export const client = new Client()
 export const account = new Account(client);
 export const databases = new Databases(client)
 
-export const DABASE_ID = process.env.EXPO_PUBLIC_DB_ID!;
+export const DATABASE_ID = process.env.EXPO_PUBLIC_DB_ID!;
 export const HABBITS_TABLE_ID = process.env.EXPO_PUBLIC_HABBIT_TABLE_ID!;
 
 

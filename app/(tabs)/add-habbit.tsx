@@ -1,16 +1,60 @@
+import { DATABASE_ID, databases, HABBITS_TABLE_ID } from '@/lib/appwrite';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { View, StyleSheet} from 'react-native';
-import { SegmentedButtons, TextInput, Button } from 'react-native-paper';
+import { ID } from 'react-native-appwrite';
+import { SegmentedButtons, TextInput, Button, useTheme , Text} from 'react-native-paper';
 
 
-const FREQUENCIES = ["diário", "semanal", "mensal"]
+const FREQUENCIES = ["diário", "semanal", "mensal"];
+type Frequency = (typeof FREQUENCIES)[number];
 
 export default function AddHabbitScreen() {
+    const [title, setTitle] = useState<string>("");
+    const [description, setDescription] = useState<string>("");
+    const [frequency, setFrequency] = useState<Frequency>("diário");
+    const [error, setError] = useState<string>("");
+    const theme = useTheme();
+    const router = useRouter();
+    const {user} =useAuth();
+
+    const handleSubmit = async() =>{
+        if(!user) return;
+        
+        try{
+        await databases.createDocument(
+            DATABASE_ID,
+            HABBITS_TABLE_ID, 
+            ID.unique(),
+            {
+                user_id:user.$id,
+                title,
+                description,
+                frequency,
+                streak_count:0,
+                last_completed: new Date().toISOString(),
+            }
+        );
+
+        router.back()
+        }catch(error){
+            if (error instanceof Error){
+                setError(error.message);
+                return
+            }
+            setError("Ocorreu um erro ao salvar")
+        }
+    }
+
     return (
         <View style={ styles.container }>
-            <TextInput label="Título" mode="outlined" style={ styles.input } />
-            <TextInput label="Descrição" mode="outlined" style={ styles.input }/>
+            <TextInput label="Título" mode="outlined" onChangeText={setTitle} style={ styles.input } />
+            <TextInput label="Descrição" mode="outlined" onChangeText={setDescription} style={ styles.input }/>
             <View style={ styles.frequencyContainer }>
                 <SegmentedButtons 
+                    value={frequency}
+                    onValueChange={(value) => setFrequency(value as Frequency)}
                     buttons={FREQUENCIES.map((freq)=>({
                             value:freq,
                             label:freq.charAt(0).toUpperCase() + freq.slice(1),
@@ -19,7 +63,8 @@ export default function AddHabbitScreen() {
                     style={ styles.segmentedButtons }
                 />
             </View>
-        <Button mode="contained" style={ styles.buttons }>Adicionar tarefa</Button>
+        <Button mode="contained" onPress={handleSubmit} disabled={!title || !description } style={[styles.buttons, (!title || !description) && styles.buttonsDisabled]}>Adicionar rotina</Button>
+        {error && <Text style={{color:theme.colors.error}}>{error}</Text>}
         </View>
     );
 }
@@ -41,6 +86,10 @@ const styles = StyleSheet.create({
         segmentedButtons:{
         },
         buttons:{
+            
+        },
+        buttonsDisabled:{
+            backgroundColor:"#666666"
         }
     }
 )

@@ -20,7 +20,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" 
         options={{ 
-          title: "Tarefas de hoje", 
+          title: "rotinas de hoje", 
           tabBarIcon: ({color,size}) => (
             <MaterialCommunityIcons 
               name="calendar-today" 
@@ -44,7 +44,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen name="add-habbit" 
         options={{ 
-          title: "Adicione uma tarefa", 
+          title: "Adicione uma rotina", 
           tabBarIcon: ({color,size}) => (
             <MaterialCommunityIcons 
               name="plus-circle" 

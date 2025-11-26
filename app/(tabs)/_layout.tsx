@@ -4,10 +4,11 @@ import {MaterialCommunityIcons} from '@expo/vector-icons';
 
 export default function TabsLayout() {
   return (
-    <Tabs 
-      screenOptions={{ 
+    <Tabs
+      screenOptions={{
         headerStyle:{backgroundColor:"#f5f5f5"},
         headerShadowVisible:false,
+        headerTitleAlign:"center",
         tabBarStyle: {
           backgroundColor: "#f5f5f5",
           borderTopWidth:0,
@@ -20,7 +21,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" 
         options={{ 
-          title: "rotinas de hoje", 
+          title: "Rotinas de hoje", 
           tabBarIcon: ({color,size}) => (
             <MaterialCommunityIcons 
               name="calendar-today" 

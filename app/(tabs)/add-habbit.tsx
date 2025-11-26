@@ -1,4 +1,4 @@
-import { DATABASE_ID, databases, HABBITS_TABLE_ID } from '@/lib/appwrite';
+import { DATABASE_ID, databases, HABITS_TABLE_ID } from '@/lib/appwrite';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -10,7 +10,7 @@ import { SegmentedButtons, TextInput, Button, useTheme , Text} from 'react-nativ
 const FREQUENCIES = ["diário", "semanal", "mensal"];
 type Frequency = (typeof FREQUENCIES)[number];
 
-export default function AddHabbitScreen() {
+export default function Addhabitscreen() {
     const [title, setTitle] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [frequency, setFrequency] = useState<Frequency>("diário");
@@ -25,7 +25,7 @@ export default function AddHabbitScreen() {
         try{
         await databases.createDocument(
             DATABASE_ID,
-            HABBITS_TABLE_ID, 
+            HABITS_TABLE_ID,
             ID.unique(),
             {
                 user_id:user.$id,
@@ -49,8 +49,8 @@ export default function AddHabbitScreen() {
 
     return (
         <View style={ styles.container }>
-            <TextInput label="Título" mode="outlined" onChangeText={setTitle} style={ styles.input } />
-            <TextInput label="Descrição" mode="outlined" onChangeText={setDescription} style={ styles.input }/>
+            <TextInput label="Título" mode="outlined" onChangeText={setTitle} textColor="#000" style={ styles.input } />
+            <TextInput label="Descrição" mode="outlined" onChangeText={setDescription} textColor="#000" style={ styles.input }/>
             <View style={ styles.frequencyContainer }>
                 <SegmentedButtons 
                     value={frequency}

@@ -1,10 +1,10 @@
-import { client, DATABASE_ID, databases, HABITS_TABLE_ID, RealTimeResponse } from "@/lib/appwrite";
+import { client, COMPLETIONS_TABLE_ID, DATABASE_ID, databases, HABITS_TABLE_ID, RealTimeResponse } from "@/lib/appwrite";
 import { useAuth } from "@/lib/auth-context";
 import { Habit } from "@/types/database.type";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, Text , ScrollView} from "react-native";
-import { Query } from "react-native-appwrite";
+import { ID, Query } from "react-native-appwrite";
 import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface } from "react-native-paper";
 
@@ -12,7 +12,7 @@ import { Button, Surface } from "react-native-paper";
 
 export default function Index() {
   const{signOut, user} = useAuth();
-  const [habit, setHabit] = useState<Habit[]>()
+  const [habits, setHabits] = useState<Habit[]>()
 
   const swipeableRefs = useRef<{[key: string]: Swipeable | null }>({})
 
@@ -46,7 +46,7 @@ export default function Index() {
         [Query.equal("user_id", user?.$id ?? "")]
         );
         // console.log(response.documents)
-        setHabit(response.documents as Habit[]);
+        setHabits(response.documents as Habit[]);
     }catch(error){
       console.log(error);
     }
@@ -65,6 +65,33 @@ export default function Index() {
   const handleDelete = async (id: string) => {
     try{
       await databases.deleteDocument(DATABASE_ID, HABITS_TABLE_ID, id)
+    }catch(error){
+      console.error(error)
+    }
+  }
+
+
+  const handleCompleteHabit = async (id: string) => {
+    if (!user) return;
+    try{
+      const currentDate = new Date().toISOString();
+
+      await databases.createDocument(DATABASE_ID, COMPLETIONS_TABLE_ID, ID.unique(),{
+        habbit_id: id,
+        user_id: user.$id,
+        completed_at: currentDate,
+      });
+      const habit = habits?.find((h)=>h.$id === id);
+      if (!habit) return;
+
+      await databases.updateDocument(
+        DATABASE_ID, 
+        HABITS_TABLE_ID, 
+        id, {
+        streak_count: habit.streak_count + 1,
+        last_completed_at: currentDate,
+        });
+      
     }catch(error){
       console.error(error)
     }
@@ -89,12 +116,12 @@ export default function Index() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-      {habit?.length === 0 ? (
+      {habits?.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateText}>Você ainda não tem uma rotina cadastrada. Adicione sua primeira!</Text>
         </View>
       ) : (
-        habit?.map((habit, index) => (
+        habits?.map((habit, index) => (
           <Swipeable ref={(ref) =>{
             swipeableRefs.current[habit.$id] = ref
           }} key={index}
@@ -105,6 +132,8 @@ export default function Index() {
           onSwipeableOpen={(direction) =>{
               if (direction === "left"){
                 handleDelete(habit.$id)
+              }else if(direction === "right"){
+                handleCompleteHabit(habit.$id)
               }
               swipeableRefs.current[habit.$id]?.close();
             }
